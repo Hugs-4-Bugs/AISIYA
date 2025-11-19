@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AISIYA  (Full)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base and Font */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Google Sans', 'Roboto', sans-serif; background-color: #f8f9fa; }
+        
+        /* 1. Main Layout: Full screen, two columns */
+        .main-layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 2. Left Sidebar (Navigation) */
+        .sidebar {
+            width: 300px;
+            background-color: white;
+            border-right: 1px solid #e8eaed;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            margin: 5px 10px;
+            border-radius: 9999px; /* Pill shape */
+            cursor: pointer;
+            color: #202124;
+            transition: background-color 0.1s;
+        }
+        .sidebar-item:hover { background-color: #f0f3f6; }
+        .sidebar-item.active { background-color: #e6f4ea; color: #1e8e3e; font-weight: 500; } /* Gemini Green Active */
+        
+        /* 3. Right Chat Area */
+        .chat-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+        }
+        
+        /* Header specific to Chat Area */
+        .chat-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #e8eaed;
+            display: flex;
+            justify-content: flex-end; /* Logout/Upgrade button right */
+            align-items: center;
+            gap: 15px;
+            background-color: white;
+        }
+        .chat-header .profile-icon {
+            width: 40px; height: 40px; border-radius: 50%; background-color: #a8dadc; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: pointer;
+        }
+        .upgrade-btn {
+            background-color: #e3f2fd; color: #1a73e8; font-weight: 500; padding: 8px 15px; border-radius: 20px; transition: background-color 0.2s;
+        }
+        .upgrade-btn:hover { background-color: #d1e5f8; }
+
+        /* Message Bubbles (Copied from previous optimized code) */
+        .chat-body { flex-grow: 1; padding: 20px; overflow-y: auto; background-color: #ffffff; max-width: 900px; margin: 0 auto;} /* Centering chat content */
+        .message-wrapper { display: flex; margin-bottom: 20px; }
+
+        .message.user .bubble { 
+            background-color: #e6f4ea !important; color: #202124 !important;
+            border-radius: 20px 20px 0 20px !important; margin-left: auto;
+        }
+        .message.ai .bubble { 
+            background-color: #f0f3f6 !important; color: #202124 !important;
+            border-radius: 20px 20px 20px 0 !important; margin-right: auto;
+        }
+        .bubble { max-width: 80%; padding: 12px 18px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+
+        /* Input Area */
+        .chat-input-area-wrapper {
+            padding: 20px;
+            border-top: 1px solid #e8eaed;
+            display: flex;
+            justify-content: center;
+            background-color: white;
+        }
+        .chat-input-area { max-width: 700px; width: 100%; }
+
+        /* Input styling from previous code */
+        .chat-input-row { display: flex; align-items: flex-end; gap: 10px; }
+        #message-input {
+            flex-grow: 1; padding: 12px 20px; border: 1px solid #dadce0; border-radius: 28px; min-height: 54px; outline: none; resize: none; transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        #message-input:focus { border-color: #4285f4; box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); }
+        .icon-button { height: 54px; width: 54px; color: white; border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s; }
+        #send-button { background-color: #4285f4; }
+        .file-upload-button { background-color: #34a853; }
+        #mic-button { background-color: #fbbc05; }
+        #mic-button.recording { background-color: #ea4335; }
+        #tts-toggle-button { background-color: transparent !important; color: #6c6c6c; }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <div class="sidebar">
+            <div class="p-4 flex justify-between items-center">
+                <button class="text-[#202124] hover:bg-[#f0f3f6] rounded-full p-2" onclick="alert('Menu Clicked')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <button class="flex items-center gap-2 bg-[#e6f4ea] text-[#1e8e3e] py-3 px-4 rounded-full font-medium" onclick="alert('New Chat')">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    New chat
+                </button>
+            </div> 
+            
+            <div class="px-3 py-2 text-sm text-gray-500 font-medium">Recent</div>
+            <div class="flex-grow">
+                <div class="sidebar-item">AI Assistant Development</div>
+                <div class="sidebar-item active">Gemini UI Code Access and...</div>
+                <div class="sidebar-item">HTML Page Ko AI Jaisa ...</div>
+                <div class="sidebar-item">Perplexity API: File Aur...</div>
+                </div>
+
+            <div class="mt-auto border-t border-[#e8eaed] pt-2">
+                <div class="sidebar-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-3"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 011.626-2.054l1.378-1.07V12a.75.75 0 011.5 0v.098l1.378 1.07a4.5 4.5 0 011.626 2.054L18 18.75l-.813-2.846a4.5 4.5 0 01-1.626-2.054l-1.378-1.07v-.098a.75.75 0 00-.75-.75h-1.5a.75.75 0 00-.75.75v.098l-1.378 1.07a4.5 4.5 0 01-1.626 2.054zM20.25 10.5v-.578a1.5 1.5 0 00-1.285-1.485l-.75-.188a2.25 2.25 0 01-1.92-2.338l.186-.93a1.5 1.5 0 00-1.484-1.287h-2.528a1.5 1.5 0 00-1.484 1.287l.186.93a2.25 2.25 0 01-1.92 2.338l-.75.187a1.5 1.5 0 00-1.285 1.485V10.5H3.75a.75.75 0 000 1.5H5.25v2.25a.75.75 0 001.5 0v-2.25H9v2.25a.75.75 0 001.5 0v-2.25h3v2.25a.75.75 0 001.5 0v-2.25h1.5a.75.75 0 00.75-.75v-1.5z" clip-rule="evenodd" /></svg>
+                    Settings & help
+                </div>
+				<div class="sidebar-footer p-4 border-t border-gray-200">
+				    <button onclick="document.getElementById('logoutForm').submit()" 
+				        class="flex items-center space-x-2 p-2 w-full text-left hover:bg-red-50 text-red-600 rounded-lg">
+				        <svg>...</svg>
+				        <span>Logout</span>
+				    </button>
+				</div>
+
+				<form id="logoutForm" th:action="@{/logout}" method="post" style="display: none;">
+				    </form>
+            </div>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-header">
+                <span class="text-xl font-semibold mr-auto">AISIYA</span>
+                <button class="upgrade-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 10.5L12 3m0 0l7.5 7.5M12 3v18" /></svg>
+                    Upgrade
+                </button>
+                <div class="profile-icon">H</div>
+            </div>
+            
+            <div id="error-box" class="hidden bg-red-500 text-white p-3 text-center font-bold"></div>
+            <div id="chat-body" class="chat-body flex flex-col space-y-4"></div>
+            
+            <div class="chat-input-area-wrapper">
+                <div class="chat-input-area">
+                    <div id="attached-files-display" class="hidden"></div>
+                    
+                    <div class="chat-input-row">
+                        <input type="file" id="file-input" class="hidden">
+                        <button type="button" class="file-upload-button icon-button" onclick="document.getElementById('file-input').click()" title="Attach File">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 15.636l-3.232 3.232a2.25 2.25 0 01-3.182 0l-7.273-7.273a2.25 2.25 0 010-3.182l3.232-3.232m12.427 3.182l-3.232-3.232a2.25 2.25 0 00-3.182 0l-7.273 7.273a2.25 2.25 0 000 3.182l3.232 3.232m0 0a2.25 2.25 0 003.182 0l7.273-7.273a2.25 2.25 0 000-3.182l-3.232-3.232" /></svg>
+                        </button>
+
+                        <textarea id="message-input" rows="1" placeholder="Type or click the mic to talk..." title="Type your message" autofocus></textarea>
+                        
+                        <button id="mic-button" class="icon-button" onclick="toggleRecognition()" title="Start/Stop Voice">
+                            <svg id="mic-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18.75a6 6 0 0 0 6-6v-1.5m-6 7.5a6 6 0 0 1-6-6v-1.5m6 7.5v3.75m-3.75 0h7.5M12 15a3 3 0 0 1-3-3V4.5a3 3 0 0 1 6 0v7.5a3 3 0 0 1-3 3Z" /></svg>
+                            <svg id="mic-stop-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hidden animate-pulse"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 7.5A2.25 2.25 0 0 1 7.5 5.25h9a2.25 2.25 0 0 1 2.25 2.25v9a2.25 2.25 0 0 1-2.25 2.25h-9a2.25 2.25 0 0 1-2.25-2.25v-9Z" /></svg>
+                        </button>
+
+                        <button id="send-button" class="icon-button" onclick="sendMessage()" title="Send">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M3.478 2.405a.75.75 0 0 0-.926.94l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.405Z" /></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8587/api/perplexity/chat'; 
+
+        // State & Element Refs (Retained from previous code)
+        let attachedFiles = [];
+        let isSending = false;
+        let ttsEnabled = false;
+        let isRecognizing = false;
+        let recognition;
+        const synth = window.speechSynthesis;
+        let femaleVoice = null; 
+
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const micButton = document.getElementById('mic-button');
+        const micStopIcon = document.getElementById('mic-stop-icon');
+        const chatBody = document.getElementById('chat-body');
+        const errorBox = document.getElementById('error-box');
+        const fileInput = document.getElementById('file-input');
+        
+        // --- Core Functions (Render, AddMessage, SendMessage, STT/TTS) ---
+        
+        function renderMarkdown(markdownText) {
+            let html = markdownText.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            html = html.replace(/```(.*?)\n([\s\S]*?)```/g, (match, lang, code) => {
+                const language = lang.trim() || 'text';
+                const cleanCode = code.trim().replace(/&lt;br&gt;/g, '\n');
+                return `<pre><code class="language-${language}">${cleanCode}</code></pre>`;
+            });
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') 
+                       .replace(/\*(.*?)\*/g, '<em>$1</em>') 
+                       .replace(/\n/g, '<br>');
+            return html;
+        }
+
+        function addMessage(sender, text, files = [], metadata = {}) {
+            let finalMessageText = text;
+            if (sender === 'ai') {
+                finalMessageText = finalMessageText.replace(/\[\d+\]/g, '').trim();
+                finalMessageText = finalMessageText.replace(/Model: [^|]+\| Tokens: \d+/g, '').trim();
+            }
+
+            const messageWrapper = document.createElement('div');
+            messageWrapper.className = `message-wrapper message ${sender}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `bubble max-w-[80%] p-4 rounded-xl shadow-sm ${sender === 'user' ? 'bg-indigo-500 text-white rounded-br-none' : 'bg-gray-100 text-gray-800 rounded-tl-none'}`;
+            
+            // File Display (Simplified)
+            if (files.length > 0) {
+                const fileContainer = document.createElement('div');
+                fileContainer.className = 'mb-2 space-y-2 text-sm';
+                fileContainer.innerHTML = '<strong>File Attached:</strong> ' + files.map(f => f.name).join(', ');
+                bubble.appendChild(fileContainer);
+            }
+
+            const textContent = document.createElement('div');
+            textContent.className = 'markdown-content'; 
+            textContent.innerHTML = renderMarkdown(finalMessageText);
+            bubble.appendChild(textContent);
+            
+            // Metadata
+            if (sender === 'ai' && metadata.model) {
+                const metadataDiv = document.createElement('div');
+                metadataDiv.className = 'text-xs mt-1 text-gray-500';
+                metadataDiv.textContent = `Model: ${metadata.model}`;
+                bubble.appendChild(metadataDiv);
+            }
+
+            messageWrapper.appendChild(bubble);
+            chatBody.appendChild(messageWrapper);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            
+            if (sender === 'ai') { speakText(finalMessageText); }
+        }
+
+        function addLoadingMessage() {
+            const existingLoading = document.getElementById('loading-message');
+            if (existingLoading) existingLoading.remove();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.id = 'loading-message';
+            messageDiv.className = 'message-wrapper flex justify-start mb-4 message ai';
+            const bubble = document.createElement('div');
+            bubble.className = 'bubble max-w-[80%] p-4 rounded-xl shadow-sm bg-gray-100 text-gray-600 rounded-tl-none';
+            bubble.innerHTML = '<span class="animate-pulse">AI is typing...</span>';
+            messageDiv.appendChild(bubble);
+            chatBody.appendChild(messageDiv);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function removeLoadingMessage() {
+            const loadingMessage = document.getElementById('loading-message');
+            if (loadingMessage) loadingMessage.remove();
+        }
+
+        function showError(message) {
+            errorBox.textContent = message;
+            errorBox.classList.remove('hidden');
+            setTimeout(() => { errorBox.classList.add('hidden'); }, 8000);
+        }
+
+        // --- File functions (Unchanged) ---
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (attachedFiles.length >= 1) {
+                showError("Only one file attachment is supported at a time.");
+                event.target.value = ''; 
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const base64DataWithPrefix = e.target.result;
+                const base64DataRaw = base64DataWithPrefix.split(',')[1];
+                
+                attachedFiles.push({
+                    name: file.name,
+                    type: file.type,
+                    data: base64DataRaw 
+                });
+                updateAttachedFilesDisplay();
+                event.target.value = ''; 
+            };
+            reader.readAsDataURL(file); 
+        }
+
+        function updateAttachedFilesDisplay() {
+            const fileDisplay = document.getElementById('attached-files-display');
+            fileDisplay.innerHTML = ''; 
+
+            if (attachedFiles.length === 0) {
+                fileDisplay.classList.add('hidden');
+                return;
+            }
+
+            fileDisplay.classList.remove('hidden');
+            attachedFiles.forEach((file, index) => {
+                const fileTag = document.createElement('div');
+                fileTag.className = 'inline-flex items-center bg-indigo-100 text-indigo-700 text-sm font-medium px-3 py-1 rounded-full mr-2 mb-2 shadow-sm';
+                fileTag.innerHTML = `<span>${file.name}</span><button type="button" class="ml-2 text-indigo-700 hover:text-indigo-900 focus:outline-none" onclick="removeAttachedFile(${index})">&times;</button>`;
+                fileDisplay.appendChild(fileTag);
+            });
+        }
+        
+        function removeAttachedFile(index) {
+            attachedFiles.splice(index, 1);
+            updateAttachedFilesDisplay();
+        }
+
+        // --- SendMessage Function (Unchanged API Call Logic) ---
+        async function sendMessage() {
+            if (isSending) return;
+            const message = messageInput.value.trim();
+            if (!message && attachedFiles.length === 0) { messageInput.focus(); return; }
+
+            synth.cancel();
+            
+            addMessage('user', message, attachedFiles);
+            
+            isSending = true;
+            sendButton.disabled = true;
+            messageInput.value = '';
+            messageInput.style.height = 'auto'; 
+            
+            const filesPayload = attachedFiles.map(file => ({ fileName: file.name, base64Data: file.data }));
+            attachedFiles = [];
+            updateAttachedFilesDisplay();
+            addLoadingMessage();
+
+            try {
+                const payload = { message: message, attachedFiles: filesPayload };
+                
+                const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                removeLoadingMessage();
+                
+                if (!response.ok) {
+                    let errorBody = await response.text();
+                    let errorMessage = `HTTP Error: ${response.status}`;
+                    try { const errorData = JSON.parse(errorBody); if (errorData.message) errorMessage = errorData.message; } catch (e) { /* Ignore */ }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+
+                if (data.choices && data.choices[0]) {
+                    const aiText = data.choices[0].message.content;
+                    const metadata = { model: data.model || 'Perplexity Model', tokens: data.usage ? data.usage.total_tokens : null };
+                    addMessage('ai', aiText, [], metadata);
+                } else {
+                    let errorMsg = 'No valid response from AI';
+                    if (data.error && data.error.message) errorMsg = data.error.message;
+                    showError('AI Error: ' + errorMsg);
+                }
+            } catch (error) {
+                removeLoadingMessage();
+                showError('Network/Fetch Error: ' + error.message);
+            } finally {
+                isSending = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+        
+        // --- STT/TTS Functions (Unchanged) ---
+        function loadVoices() {
+            if (femaleVoice) return; 
+            const voices = synth.getVoices();
+            femaleVoice = voices.find(voice => voice.name.includes('Female') || voice.name.includes('Woman') || (voice.lang === 'en-US' && voice.name.includes('Zira'))) || voices[0];
+        }
+        function speakText(text) {
+            if (!ttsEnabled || !text || synth.speaking) return;
+            const cleanText = text.replace(/\*\*/g, '').replace(/\*/g, '').replace(/#/g, ''); 
+            synth.cancel(); 
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            if (femaleVoice) utterance.voice = femaleVoice;
+            utterance.lang = 'en-US'; 
+            utterance.onerror = (e) => console.error('Speech synthesis error:', e);
+            synth.speak(utterance);
+        }
+        function setupSTT() {
+            if (!('webkitSpeechRecognition' in window)) return;
+            const SpeechRecognition = window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition(); 
+            recognition.lang = 'en-US'; recognition.continuous = false; recognition.interimResults = false;
+            recognition.onstart = () => { isRecognizing = true; micButton.classList.add('recording'); micStopIcon.classList.remove('hidden'); micIcon.classList.add('hidden'); messageInput.placeholder = 'Listening...'; };
+            recognition.onend = () => { isRecognizing = false; micButton.classList.remove('recording'); micIcon.classList.remove('hidden'); micStopIcon.classList.add('hidden'); messageInput.placeholder = 'Type or click the mic to talk...'; };
+            recognition.onerror = (event) => { console.error('Speech recognition error:', event.error); showError('Speech Error: ' + event.error); isRecognizing = false; };
+            recognition.onresult = (event) => {
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) { if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript; }
+                messageInput.value = finalTranscript; messageInput.style.height = 'auto'; messageInput.style.height = messageInput.scrollHeight + 'px';
+            };
+        }
+        function toggleRecognition() {
+            if (isRecognizing) recognition.stop(); else if (!isSending) recognition.start();
+        }
+		
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+            messageInput.addEventListener('input', () => { messageInput.style.height = 'auto'; messageInput.style.height = messageInput.scrollHeight + 'px'; });
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // TTS Toggle logic is now in the header, handled by direct ID logic
+            document.getElementById('tts-toggle-button').addEventListener('click', () => {
+                ttsEnabled = !ttsEnabled;
+                document.getElementById('tts-icon-on').classList.toggle('hidden', !ttsEnabled);
+                document.getElementById('tts-icon-off').classList.toggle('hidden', ttsEnabled);
+                if (ttsEnabled) speakText("Speech enabled."); else synth.cancel();
+            });
+
+            setupSTT();
+            loadVoices();
+            synth.onvoiceschanged = loadVoices;
+
+            addMessage('ai', 'Welcome to your **Gemini AI Assistant UI**. This UI matches the Google app structure. How can I help you?');
+            messageInput.focus();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title> AISIYA </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Base and Font */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Google Sans', 'Roboto', sans-serif; background-color: #f8f9fa; }
+        
+        /* 1. Main Layout: Full screen, two columns */
+        .main-layout {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 2. Left Sidebar (Navigation) */
+        .sidebar {
+            width: 300px;
+            background-color: white;
+            border-right: 1px solid #e8eaed;
+            padding: 10px 0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px;
+            margin: 5px 10px;
+            border-radius: 9999px; /* Pill shape */
+            cursor: pointer;
+            color: #5f6368;
+            transition: background-color 0.1s;
+        }
+        .sidebar-item:hover {
+            background-color: #f0f0f0;
+        }
+        .sidebar-item.active {
+            background-color: #c2e7ff;
+            color: #1a73e8;
+            font-weight: 600;
+        }
+        .sidebar-item-text {
+            margin-left: 15px;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .new-chat-button {
+            display: flex;
+            align-items: center;
+            margin: 10px 10px 20px 10px;
+            padding: 14px 20px;
+            background-color: #e6f4ea;
+            color: #1e8e3e;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            box-shadow: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+            transition: background-color 0.1s;
+        }
+        .new-chat-button:hover {
+            background-color: #d8f1e0;
+        }
+        .new-chat-icon {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        /* 3. Right Chat Area */
+        .chat-area {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            position: relative;
+        }
+        .chat-container {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 20px 50px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e8eaed;
+            background-color: white;
+            z-index: 10;
+        }
+        .chat-header-actions button {
+            margin-left: 10px;
+            padding: 8px;
+            border-radius: 50%;
+            background-color: transparent;
+            color: #5f6368;
+            transition: background-color 0.1s;
+        }
+        .chat-header-actions button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* 4. Message Styling */
+        .message-row {
+            display: flex;
+            margin-bottom: 30px;
+            align-items: flex-start;
+        }
+        .message-icon {
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+        }
+        .user-icon {
+            background-color: #4285f4; /* Google Blue */
+        }
+        .ai-icon {
+            background-color: #1a73e8; /* Deeper Blue for AI */
+        }
+        .message-content {
+            padding: 10px 0;
+            line-height: 1.6;
+            flex-grow: 1;
+            color: #202124;
+        }
+        .message-content p {
+            margin-bottom: 1em;
+        }
+        .message-content a {
+            color: #1a73e8;
+            text-decoration: none;
+        }
+        .message-content a:hover {
+            text-decoration: underline;
+        }
+        /* Markdown styling for the AI response */
+        .message-content h1, .message-content h2, .message-content h3 {
+            font-weight: 600;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+        }
+        .message-content ul, .message-content ol {
+            padding-left: 20px;
+            margin-bottom: 1em;
+        }
+        .message-content pre {
+            background-color: #f1f3f4;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            margin-bottom: 1em;
+        }
+        .citation-container {
+            margin-top: 15px;
+            padding: 10px;
+            border-left: 3px solid #dadce0;
+            font-size: 0.85rem;
+            color: #5f6368;
+        }
+        .citation-item {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .citation-item a {
+            color: #5f6368;
+            text-decoration: none;
+        }
+        .citation-item a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 5. Input Bar */
+        .input-bar-wrapper {
+            padding: 10px 20px 40px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .input-bar {
+            display: flex;
+            align-items: center;
+            border: 1px solid #dadce0;
+            border-radius: 25px;
+            padding: 10px 15px;
+            background-color: white;
+            box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
+            transition: box-shadow 0.2s;
+        }
+        .input-bar:focus-within {
+            box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 6px 10px 4px rgba(60, 64, 67, 0.15);
+        }
+        #message-input {
+            flex-grow: 1;
+            border: none;
+            outline: none;
+            resize: none;
+            max-height: 150px;
+            font-size: 1rem;
+            padding: 5px 10px;
+            overflow-y: auto;
+        }
+        .input-actions button {
+            padding: 8px;
+            border-radius: 50%;
+            background-color: transparent;
+            color: #5f6368;
+            transition: background-color 0.1s;
+        }
+        .input-actions button:hover {
+            background-color: #f0f0f0;
+        }
+        #send-button {
+            color: #1a73e8; /* Google Blue */
+        }
+        #loading-indicator {
+            display: none;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #1a73e8;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 6. File Attachment Display */
+        #attachment-preview {
+            display: flex;
+            align-items: center;
+            padding: 5px 15px;
+            margin-bottom: 10px;
+            border-radius: 15px;
+            background-color: #f1f3f4;
+            font-size: 0.9rem;
+            color: #5f6368;
+            max-width: fit-content;
+        }
+        .attachment-name {
+            margin-right: 10px;
+        }
+        #remove-file-button {
+            background: none;
+            border: none;
+            color: #5f6368;
+            cursor: pointer;
+            padding: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <div class="p-4 text-2xl font-bold text-gray-800 flex items-center">
+                <span class="text-blue-600 mr-2">A</span>
+                <span class="text-red-600 mr-2">I</span>
+                <span class="text-yellow-600 mr-2">S</span>
+                <span class="text-blue-600 mr-2">I</span>
+                <span class="text-green-600">Y</span>
+                <span class="text-red-600">A</span>
+            </div>
+            
+            <div class="new-chat-button" onclick="startNewChat()">
+                <svg class="new-chat-icon w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                New Chat
+            </div>
+
+            <!-- History Section (Placeholder for now) -->
+            <div class="flex-grow overflow-y-auto px-2">
+                <div class="sidebar-item active">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                    <span class="sidebar-item-text">Welcome Chat</span>
+                </div>
+                <!-- Add more history items here -->
+            </div>
+            
+            <!-- Bottom Section (Settings, Logout) -->
+            <div class="p-2 border-t border-gray-100">
+                <div class="sidebar-item">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6v-2m6 10a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6v-2"></path></svg>
+                    <span class="sidebar-item-text">Settings</span>
+                </div>
+                <!-- Logout Button -->
+                <div class="sidebar-item" onclick="logout()">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <span class="sidebar-item-text">Logout</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Chat Area -->
+        <div class="chat-area">
+            <div class="chat-header">
+                <h1 class="text-xl font-semibold text-gray-800">AISIYA</h1>
+                <div class="chat-header-actions">
+                    <!-- TTS Toggle Button -->
+                    <button id="tts-toggle-button" aria-label="Toggle Text to Speech">
+                         <!-- TTS ON Icon (Speaker with waves) -->
+                        <svg id="tts-icon-on" class="w-6 h-6 text-blue-600 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H11a2 2 0 012 2v2a2 2 0 01-2 2H5.586l-2.757 2.757a1 1 0 01-1.414 0l-.707-.707a1 1 0 010-1.414L3.586 17H5a2 2 0 012-2h3m-5-8a2 2 0 012-2h3m-5 4a2 2 0 012-2h3"></path></svg>
+                        <!-- TTS OFF Icon (Muted Speaker) -->
+                        <svg id="tts-icon-off" class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M13 18.5a2 2 0 01-2-2v-3a2 2 0 012-2h.586m-2.757 2.757l-2.828 2.828M5 15h6m-6 0a2 2 0 01-2-2v-3a2 2 0 012-2h6M5 15v-6M19 19l-4-4m4 0l-4 4"></path></svg>
+                    </button>
+                    <!-- Settings Button -->
+                    <button aria-label="Settings">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.526.319 1.156.49 1.782.49z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="chat-messages" class="chat-container">
+                <!-- Messages will be injected here -->
+            </div>
+
+            <!-- Input Section -->
+            <div class="input-bar-wrapper">
+                <div id="attachment-preview" class="hidden">
+                    <span class="attachment-name" id="attached-file-name"></span>
+                    <button id="remove-file-button">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+                <div class="input-bar">
+                    
+                    <button onclick="document.getElementById('file-input').click()" aria-label="Attach File">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13.5"></path></svg>
+                    </button>
+                    <input type="file" id="file-input" class="hidden" accept=".pdf, .doc, .docx, .txt, image/*">
+
+                    <textarea id="message-input" rows="1" placeholder="Message AISIYA..." class="resize-none" autofocus></textarea>
+                    
+                    <div class="input-actions flex items-center space-x-2">
+                        <!-- STT Button -->
+                        <button id="stt-button" aria-label="Voice Input">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3.91-3.2 7-7.3 7s-7.3-3.09-7.3-7H4c0 4.08 3.05 7.44 7 7.93V21h2v-3.07c3.95-.49 7-3.85 7-7.93h-2.7z"></path></svg>
+                        </button>
+                        
+                        <div id="loading-indicator"></div>
+
+                        <!-- Send Button -->
+                        <button id="send-button" onclick="sendMessage()" aria-label="Send Message">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+	<script>
+	    const messageInput = document.getElementById('message-input');
+	    const chatMessages = document.getElementById('chat-messages');
+	    const sendButton = document.getElementById('send-button');
+	    const sttButton = document.getElementById('stt-button');
+	    const loadingIndicator = document.getElementById('loading-indicator');
+	    const fileInput = document.getElementById('file-input');
+	    const attachmentPreview = document.getElementById('attachment-preview');
+	    const attachedFileName = document.getElementById('attached-file-name');
+	    const removeFileButton = document.getElementById('remove-file-button');
+	    
+	    let ttsEnabled = false;
+	    const synth = window.speechSynthesis;
+	    let voices = [];
+	    let isSending = false;
+	    let attachedFile = null; // { base64Data: '...', fileName: '...' }
+
+	    // --- Utility Functions ---
+
+	    function loadVoices() {
+	        voices = synth.getVoices().filter(v => v.lang.startsWith('en-') || v.lang.startsWith('hi-'));
+	        console.log("Loaded voices:", voices.length);
+	    }
+
+	    function speakText(text) {
+	        if (!ttsEnabled || isSending) return;
+	        synth.cancel(); // Stop current speech
+	        
+	        // Clean up Markdown and special characters for better speech
+	        let cleanedText = text
+	            .replace(/\*\*|__|\*/g, '') // Remove bold/italics markers
+	            .replace(/\[\d+\]/g, '')    // Remove citations [1]
+	            .replace(/#+\s/g, '');      // Remove markdown headers
+	        
+	        const utterance = new SpeechSynthesisUtterance(cleanedText);
+	        
+	        // Try to select a natural-sounding English or Hindi voice
+	        let selectedVoice = voices.find(v => v.name.includes('Google') && v.lang.startsWith('en-')) ||
+	                             voices.find(v => v.lang.startsWith('en-')) ||
+	                             voices.find(v => v.lang.startsWith('hi-'));
+
+	        if (selectedVoice) {
+	            utterance.voice = selectedVoice;
+	        } else {
+	            console.warn("No suitable voice found. Using default.");
+	        }
+
+	        synth.speak(utterance);
+	    }
+
+	    // Simple Markdown to HTML conversion (basic support)
+	    function markdownToHtml(markdown) {
+	        let html = markdown
+	            // Convert **bold** or *italic*
+	            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+	            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+	            // Convert headers (basic implementation)
+	            .replace(/^###\s*(.*$)/gim, '<h3>$1</h3>')
+	            .replace(/^##\s*(.*$)/gim, '<h2>$1</h2>')
+	            .replace(/^#\s*(.*$)/gim, '<h1>$1</h1>')
+	            // Convert code blocks (basic pre)
+	            .replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => 
+	                `<pre><code class="language-${lang || ''}">${code.trim()}</code></pre>`)
+	            // Convert inline code
+	            .replace(/`([^`]+)`/g, '<code>$1</code>')
+	            // Convert line breaks to paragraphs
+	            .replace(/\n\n/g, '</p><p>')
+	            .replace(/\n/g, '<br/>')
+	            // Ensure list items start correctly
+	            .replace(/<br\/>\*\s/g, '<br/>&bull; ')
+	            .replace(/<br\/>\d\.\s/g, '<br/>$&\. ');
+	            
+	        // Handle lists that start a message
+	        html = html.replace(/^\*\s/g, '&bull; ').replace(/^\d\.\s/g, '$\. ');
+
+	        return `<p>${html}</p>`;
+	    }
+	    
+	    // --- Core Chat Logic ---
+
+	    function addMessage(role, text, sources = []) {
+	        const row = document.createElement('div');
+	        row.className = 'message-row';
+
+	        const icon = document.createElement('div');
+	        icon.className = 'message-icon ' + (role === 'user' ? 'user-icon' : 'ai-icon');
+	        icon.textContent = role === 'user' ? 'U' : 'A';
+
+	        const contentDiv = document.createElement('div');
+	        contentDiv.className = 'message-content';
+	        
+	        contentDiv.innerHTML = markdownToHtml(text);
+
+	        // Ensure sources is an array before checking length
+	        if (Array.isArray(sources) && sources.length > 0) {
+	            const citationContainer = document.createElement('div');
+	            citationContainer.className = 'citation-container';
+	            citationContainer.innerHTML = '<strong>Sources:</strong>';
+	            sources.forEach(source => {
+	                const link = document.createElement('a');
+	                link.className = 'citation-item';
+	                link.href = source.uri;
+	                link.target = '_blank';
+	                link.textContent = source.title || source.uri;
+	                citationContainer.appendChild(link);
+	            });
+	            contentDiv.appendChild(citationContainer);
+	        }
+
+	        row.appendChild(icon);
+	        row.appendChild(contentDiv);
+	        chatMessages.appendChild(row);
+	        
+	        // Scroll to the latest message
+	        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+	        if (role === 'ai') {
+	            speakText(text);
+	        }
+	    }
+
+	    async function sendMessage() {
+	        if (isSending) return;
+	        const message = messageInput.value.trim();
+	        if (!message && !attachedFile) return;
+
+	        isSending = true;
+	        sendButton.classList.add('hidden');
+	        sttButton.classList.add('hidden');
+	        loadingIndicator.style.display = 'block';
+	        synth.cancel(); // Stop any ongoing speech
+
+	        try {
+	            // 1. User message display
+	            addMessage('user', message || 'Attached file for analysis.');
+	            messageInput.value = '';
+	            messageInput.style.height = 'auto'; // Reset textarea height
+	            
+	            // 2. API Request Setup
+	            const apiUrl = '/api/perplexity/chat'; 
+
+	            const requestBody = {
+	                message: message,
+	                attachedFiles: []
+	            };
+
+	            if (attachedFile) {
+	                requestBody.attachedFiles.push(attachedFile);
+	            }
+
+	            // 3. API Call
+	            const response = await fetch(apiUrl, {
+	                method: 'POST',
+	                headers: {
+	                    'Content-Type': 'application/json'
+	                },
+	                body: JSON.stringify(requestBody)
+	            });
+
+	            if (!response.ok) {
+	                const errorDetails = await response.text();
+	                throw new Error(`API returned status ${response.status}: ${errorDetails}`);
+	            }
+
+	            const data = await response.json();
+	            console.log("API Response:", data);
+
+	            // 4. AI response display
+	            // ⭐ CRITICAL FIX: Use optional chaining to safely access nested properties
+	            const aiMessage = data.choices?.[0]?.message?.content || "Sorry, I could not generate a response.";
+	            
+	            let sources = [];
+	            if (data.usage?.sources && Array.isArray(data.usage.sources)) {
+	                sources = data.usage.sources;
+	            }
+
+	            addMessage('ai', aiMessage, sources);
+
+	        } catch (error) {
+	            console.error('Error sending message:', error);
+	            addMessage('ai', `**Error:** An unexpected error occurred. Please check the console for details. (Message: ${error.message})`);
+	        } finally {
+	            // 5. Cleanup
+	            isSending = false;
+	            sendButton.classList.remove('hidden');
+	            sttButton.classList.remove('hidden');
+	            loadingIndicator.style.display = 'none';
+	            
+	            // Clear file state
+	            clearAttachment(); 
+	        }
+	    }
+	    
+	    // --- File Handling ---
+
+	    function handleFileSelect(event) {
+	        const file = event.target.files[0];
+	        if (!file) return;
+
+	        const reader = new FileReader();
+	        reader.onload = (e) => {
+	            attachedFile = {
+	                base64Data: e.target.result, // Data URI (includes MIME type and base64)
+	                fileName: file.name
+	            };
+	            attachedFileName.textContent = file.name;
+	            attachmentPreview.classList.remove('hidden');
+	            messageInput.focus();
+	        };
+	        reader.readAsDataURL(file);
+	    }
+
+	    removeFileButton.addEventListener('click', clearAttachment);
+	    
+	    function clearAttachment() {
+	        attachedFile = null;
+	        fileInput.value = '';
+	        attachmentPreview.classList.add('hidden');
+	        attachedFileName.textContent = '';
+	    }
+
+	    // --- Speech-to-Text (STT) Logic ---
+
+	    let recognition;
+	    let isRecognizing = false;
+
+	    function setupSTT() {
+	        if (!('webkitSpeechRecognition' in window)) {
+	            sttButton.classList.add('hidden');
+	            console.warn('Speech Recognition not supported in this browser.');
+	            return;
+	        }
+
+	        recognition = new webkitSpeechRecognition();
+	        recognition.continuous = false;
+	        recognition.interimResults = false;
+	        recognition.lang = 'en-US'; // Adjust language as needed
+
+	        recognition.onstart = () => {
+	            isRecognizing = true;
+	            sttButton.innerHTML = '<svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3.91-3.2 7-7.3 7s-7.3-3.09-7.3-7H4c0 4.08 3.05 7.44 7 7.93V21h2v-3.07c3.95-.49 7-3.85 7-7.93h-2.7z"></path></svg>';
+	        };
+
+	        recognition.onresult = (event) => {
+	            let interimTranscript = '';
+	            let finalTranscript = '';
+	            for (let i = event.resultIndex; i < event.results.length; ++i) {
+	                if (event.results[i].isFinal) {
+	                    finalTranscript += event.results[i][0].transcript;
+	                } else {
+	                    interimTranscript += event.results[i][0].transcript;
+	                }
+	            }
+	            messageInput.value = finalTranscript || interimTranscript;
+	            messageInput.dispatchEvent(new Event('input')); // Trigger resize
+	            if (finalTranscript) {
+	                sendMessage();
+	            }
+	        };
+
+	        recognition.onerror = (event) => {
+	            console.error('Speech Recognition Error:', event.error);
+	            isRecognizing = false;
+	            sttButton.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3.91-3.2 7-7.3 7s-7.3-3.09-7.3-7H4c0 4.08 3.05 7.44 7 7.93V21h2v-3.07c3.95-.49 7-3.85 7-7.93h-2.7z"></path></svg>';
+	        };
+
+	        recognition.onend = () => {
+	            isRecognizing = false;
+	            sttButton.innerHTML = '<svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3.91-3.2 7-7.3 7s-7.3-3.09-7.3-7H4c0 4.08 3.05 7.44 7 7.93V21h2v-3.07c3.95-.49 7-3.85 7-7.93h-2.7z"></path></svg>';
+	        };
+	    }
+
+	    sttButton.addEventListener('click', () => {
+	        if (isRecognizing) recognition.stop(); else if (!isSending) recognition.start();
+	    });
+
+	    // ⭐ FIX: Updated to use Spring Security's /logout endpoint
+	    function logout() {
+	        window.location.href = '/logout'; 
+	    }
+
+	    function startNewChat() {
+	        // Placeholder for new chat logic
+	        chatMessages.innerHTML = '';
+	        addMessage('ai', 'New chat started. How can I help you now?');
+	        clearAttachment();
+	    }
+
+	    // --- Initialization ---
+	    document.addEventListener('DOMContentLoaded', () => {
+	        messageInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+	        messageInput.addEventListener('input', () => { messageInput.style.height = 'auto'; messageInput.style.height = messageInput.scrollHeight + 'px'; });
+	        fileInput.addEventListener('change', handleFileSelect);
+
+	        // TTS Toggle logic is now in the header, handled by direct ID logic
+	        document.getElementById('tts-toggle-button').addEventListener('click', () => {
+	            ttsEnabled = !ttsEnabled;
+	            document.getElementById('tts-icon-on').classList.toggle('hidden', !ttsEnabled);
+	            document.getElementById('tts-icon-off').classList.toggle('hidden', ttsEnabled);
+	            if (ttsEnabled) speakText("Speech enabled."); else synth.cancel();
+	        });
+
+	        setupSTT();
+	        loadVoices();
+	        synth.onvoiceschanged = loadVoices;
+
+	        addMessage('ai', 'Welcome to your ** AISIYA Assistant**. This UI matches the Google app structure. How can I help you?');
+	        messageInput.focus();
+	    });
+	</script>
+</body>
+</html>

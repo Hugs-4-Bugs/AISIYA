@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+        <h2 class="text-3xl font-bold mb-6 text-center text-gray-800">Login</h2>
+
+        <form th:action="@{/login}" method="post" class="space-y-4">
+            <div th:if="${param.error}" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                Invalid Email or Password.
+            </div>
+            
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700">Email ID</label>
+                <input type="text" id="username" name="username" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Login
+            </button>
+        </form>
+
+        <div class="my-6 text-center text-gray-500">OR</div>
+
+        <div class="space-y-4">
+            <a th:href="@{/oauth2/authorization/google}" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <img src="https://img.icons8.com/color/20/000000/google-logo.png" alt="Google" class="mr-2"/>
+                Sign in with Google
+            </a>
+            <a th:href="@{/oauth2/authorization/github}" class="w-full flex items-center justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                <img src="https://img.icons8.com/ios-filled/20/000000/github.png" alt="GitHub" class="mr-2"/>
+                Sign in with GitHub
+            </a>
+        </div>
+
+        <div class="mt-6 text-center text-sm">
+            Don't have an account? <a href="/register" class="font-medium text-indigo-600 hover:text-indigo-500">Register here</a>
+        </div>
+    </div>
+</body>
+</html>
