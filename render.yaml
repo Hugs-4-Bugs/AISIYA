@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: aisiya-backend
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    autoDeploy: true
